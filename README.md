@@ -183,6 +183,73 @@ To run benchmarks on your own hardware:
 ./benchmark.sh rust ab
 ```
 
+## Stress Testing & Resource Monitoring
+
+Comprehensive stress testing with CPU, RAM, I/O monitoring and extreme load scenarios.
+
+### Test Scenarios
+
+1. **Standard Load Test**: Baseline performance (10K requests, 100 concurrent)
+2. **High Concurrency Test**: Stress with high concurrent connections (100K requests, 500 concurrent)
+3. **Very High Load Test**: Extreme stress conditions (1M requests, 1000 concurrent)
+4. **Large Payload Test**: Testing with large data transfers
+5. **Sustained Load Test**: Endurance testing (continuous load for 5 minutes)
+
+### Resource Monitoring
+
+Each test monitors:
+- **CPU Usage**: Average and peak utilization percentages
+- **Memory Consumption**: RAM usage in MB (average and peak)
+- **Network I/O**: Data transfer rates (RX/TX)
+- **Disk I/O**: Block device read/write operations
+- **Request Failures**: Error rates under stress conditions
+
+### Running Stress Tests
+
+```bash
+# Run comprehensive stress test on a single language
+./benchmark-stress.sh <language>
+
+# Example: Stress test Go implementation
+./benchmark-stress.sh go
+
+# Run stress tests on all languages
+./benchmark-stress-all.sh
+```
+
+### Stress Test Results
+
+Results are saved in the `stress_test_results/` directory:
+
+- Individual test results (`.txt` files)
+- Resource monitoring data (`.csv` files)
+- Comprehensive summary report (`stress_test_summary.md`)
+
+### Example Output
+
+The stress tests provide detailed metrics:
+
+```
+Standard Load Test:
+  Requests/sec: 15234.67
+  Avg latency: 6.564 ms
+  Failed requests: 0
+  Total time: 0.656 seconds
+
+Resource Usage:
+  CPU: avg=45.2%, max=78.5%
+  Memory: avg=125.3MB, max=158.7MB
+```
+
+### Interpreting Results
+
+- **Throughput**: Higher requests/sec indicates better performance
+- **Latency**: Lower average latency means faster response times
+- **Failed Requests**: Should be 0 or very low under normal conditions
+- **CPU Usage**: Lower usage indicates better efficiency
+- **Memory Usage**: Stable memory consumption suggests no memory leaks
+- **Scalability**: Performance retention under increasing load
+
 ## Performance Considerations
 
 All implementations prioritize:

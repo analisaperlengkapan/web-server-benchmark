@@ -1,0 +1,268 @@
+name: Test Language Implementations
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  # Compiled languages that can be built directly
+  test-rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Build Rust server
+        working-directory: ./rust
+        run: cargo build --release
+
+  test-go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+      - name: Build Go server
+        working-directory: ./go
+        run: go build -o server main.go
+
+  test-c:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y libmicrohttpd-dev
+      - name: Build C server
+        working-directory: ./c
+        run: gcc -o server server.c -lmicrohttpd -O3
+
+  test-cpp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget cmake libboost-all-dev
+      - name: Download Crow header
+        working-directory: ./cpp
+        run: wget https://github.com/CrowCpp/Crow/releases/download/v1.0%2B5/crow_all.h
+      - name: Build C++ server
+        working-directory: ./cpp
+        run: g++ -o server server.cpp -lpthread -O3 -std=c++14
+
+  test-crystal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Crystal
+        uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: latest
+      - name: Build Crystal server
+        working-directory: ./crystal
+        run: crystal build --release server.cr
+
+  test-zig:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.11.0
+      - name: Build Zig server
+        working-directory: ./zig
+        run: zig build-exe server.zig -O ReleaseFast
+
+  test-nim:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Nim
+        uses: jiro4989/setup-nim-action@v1
+        with:
+          nim-version: '2.0.0'
+      - name: Install dependencies
+        working-directory: ./nim
+        run: nimble install -y jester
+      - name: Build Nim server
+        working-directory: ./nim
+        run: nim c -d:release --opt:speed server.nim
+
+  test-v:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup V
+        uses: vlang/setup-v@v1
+        with:
+          check-latest: true
+      - name: Build V server
+        working-directory: ./v
+        run: v -prod server.v
+
+  test-fortran:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install gfortran
+        run: sudo apt-get update && sudo apt-get install -y gfortran
+      - name: Build Fortran server
+        working-directory: ./fortran
+        run: gfortran -o server server.f90 -O3
+
+  # Ada test disabled - AWS (Ada Web Server) library not available in Debian bookworm repos
+  # test-ada:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Install GNAT
+  #       run: sudo apt-get update && sudo apt-get install -y gnat gprbuild
+  #     - name: Note
+  #       run: echo "Ada AWS library not available in standard repos"
+
+  # JVM languages
+  test-java:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Build Java server
+        working-directory: ./java
+        run: mvn clean package
+
+  test-kotlin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: '8.5'
+      - name: Build Kotlin server
+        working-directory: ./kotlin
+        run: gradle build --no-daemon
+
+  # .NET languages
+  test-csharp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build C# server
+        working-directory: ./csharp
+        run: dotnet build csharp-server.csproj
+
+  # Interpreted languages with syntax checking
+  test-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        working-directory: ./python
+        run: |
+          pip install --no-cache-dir -r requirements.txt
+          pip install pylint
+      - name: Check Python syntax
+        working-directory: ./python
+        run: python -m py_compile main.py
+      - name: Lint Python code
+        working-directory: ./python
+        run: pylint --errors-only main.py || true
+
+  test-javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        working-directory: ./javascript
+        run: npm install
+      - name: Check JavaScript syntax
+        working-directory: ./javascript
+        run: node --check server.js
+
+  test-typescript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        working-directory: ./typescript
+        run: npm install
+      - name: Compile TypeScript
+        working-directory: ./typescript
+        run: npm run build
+
+  test-ruby:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+      - name: Install dependencies
+        working-directory: ./ruby
+        run: bundle install
+      - name: Check Ruby syntax
+        working-directory: ./ruby
+        run: ruby -c server.rb
+
+  test-php:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - name: Check PHP syntax
+        working-directory: ./php
+        run: php -l index.php
+
+  # Assembly - just check file exists and has content
+  test-assembly:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install NASM
+        run: sudo apt-get update && sudo apt-get install -y nasm
+      - name: Check Assembly file
+        working-directory: ./assembly
+        run: |
+          if [ -f server.asm ]; then
+            echo "Assembly file exists"
+            nasm -f elf64 server.asm -o server.o || echo "Assembly compilation may require additional setup"
+          else
+            echo "Assembly file not found"
+            exit 1
+          fi

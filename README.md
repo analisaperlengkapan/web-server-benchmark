@@ -1,5 +1,7 @@
 # Web Server Benchmark
 
+[![Test Language Implementations](https://github.com/analisaperlengkapan/web-server-benchmark/actions/workflows/test-languages.yml/badge.svg)](https://github.com/analisaperlengkapan/web-server-benchmark/actions/workflows/test-languages.yml)
+
 A comprehensive polyglot HTTP server benchmark suite comparing raw throughput performance across 19 programming languages.
 
 ## Overview

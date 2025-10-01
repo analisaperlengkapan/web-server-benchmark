@@ -67,6 +67,9 @@ tmp/
 temp/
 *.tmp
 
+# Tools downloaded during CI
+actionlint
+
 # Docker
 .dockerignore
 

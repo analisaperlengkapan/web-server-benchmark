@@ -89,10 +89,12 @@ jobs:
           nim-version: '2.0.0'
       - name: Install dependencies
         working-directory: ./nim
-        run: nimble install -y jester
+        run: |
+          nimble refresh
+          nimble install -y jester
       - name: Build Nim server
         working-directory: ./nim
-        run: nim c -d:release server.nim
+        run: nim c -d:release --opt:speed server.nim
 
   test-v:
     runs-on: ubuntu-latest

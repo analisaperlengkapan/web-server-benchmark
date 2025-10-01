@@ -2,6 +2,7 @@ with AWS.Server;
 with AWS.Response;
 with AWS.Status;
 with AWS.MIME;
+with AWS.Messages;
 
 procedure Server is
 

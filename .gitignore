@@ -76,3 +76,5 @@ actionlint
 # Benchmark results
 results/
 *.results
+benchmark_results.txt
+benchmark_table.md

@@ -2,9 +2,9 @@ name: Test Language Implementations
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 jobs:
   # Compiled languages that can be built directly

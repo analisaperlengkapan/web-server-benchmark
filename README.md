@@ -107,66 +107,104 @@ hey -n 10000 -c 100 http://localhost:8080/hello
 
 ## Benchmark Results
 
-Performance comparison of all language implementations using Apache Bench (`ab -n 10000 -c 100`).
+Performance comparison of language implementations using Apache Bench (`ab -n 10000 -c 100`).
 
 **Test Environment:**
-- CPU: 4 cores
+- CPU: 4 cores  
 - RAM: 8GB
 - Tool: Apache Bench (ab)
 - Parameters: 10,000 requests, 100 concurrent connections
 - Endpoint: `GET /hello`
+- Date: October 2025
 
-### Results Table
+### Actual Test Results
 
-| Rank | Language | Framework/Library | Requests/sec | Avg Latency (ms) | Transfer Rate (KB/s) |
-|------|----------|-------------------|--------------|------------------|---------------------|
-| 1 | **Rust** | Actix-web | 15234.67 | 6.564 | 2024.15 |
-| 2 | **C++** | Crow | 14856.23 | 6.731 | 1973.42 |
-| 3 | **Zig** | Custom | 14523.89 | 6.885 | 1929.67 |
-| 4 | **C** | libmicrohttpd | 14012.45 | 7.138 | 1861.65 |
-| 5 | **Crystal** | HTTP::Server (stdlib) | 12876.34 | 7.766 | 1710.23 |
-| 6 | **Nim** | Jester | 11234.56 | 8.901 | 1492.18 |
-| 7 | **V** | vweb | 10987.43 | 9.101 | 1459.37 |
-| 8 | **Go** | net/http (stdlib) | 10234.78 | 9.771 | 1359.42 |
-| 9 | **Assembly** | x86-64 syscalls | 9876.54 | 10.125 | 1312.34 |
-| 10 | **Java** | Spring Boot | 8234.67 | 12.143 | 1094.21 |
-| 11 | **Kotlin** | Ktor | 7856.23 | 12.729 | 1043.98 |
-| 12 | **C#** | ASP.NET Core | 7234.56 | 13.821 | 961.27 |
-| 13 | **Ada** | AWS (Ada Web Server) | 6789.12 | 14.727 | 902.15 |
-| 14 | **JavaScript** | Express | 5678.90 | 17.609 | 754.52 |
-| 15 | **TypeScript** | Express | 5456.78 | 18.326 | 725.14 |
-| 16 | **Fortran** | Custom | 4567.89 | 21.892 | 607.01 |
-| 17 | **Python** | FastAPI + Uvicorn | 3456.78 | 28.928 | 459.35 |
-| 18 | **Ruby** | Sinatra + Puma | 2876.54 | 34.764 | 382.20 |
-| 19 | **PHP** | Built-in server | 2456.78 | 40.703 | 326.57 |
+The following results were obtained from running the benchmark suite in the CI/CD environment:
+
+| Rank | Language | Framework/Library | Requests/sec | Avg Latency (ms) | Transfer Rate (KB/s) | Status |
+|------|----------|-------------------|--------------|------------------|---------------------|--------|
+| 1 | **Go** | net/http (stdlib) | 4998.36 | 20.007 | 663.85 | ✅ Tested |
+
+### Expected Performance (Reference)
+
+Based on typical performance characteristics and industry benchmarks, the expected relative performance rankings are:
+
+| Tier | Language | Framework/Library | Expected Requests/sec | Notes |
+|------|----------|-------------------|-----------------------|-------|
+| 🚀 High | **Rust** | Actix-web | ~15,000+ | Highly optimized, zero-cost abstractions |
+| 🚀 High | **C++** | Crow | ~14,000+ | Direct memory control, compiled |
+| 🚀 High | **Zig** | Custom | ~14,000+ | Low-level optimization |
+| 🚀 High | **C** | libmicrohttpd | ~13,000+ | System-level performance |
+| 🚀 High | **Crystal** | HTTP::Server | ~12,000+ | Ruby-like syntax, compiled |
+| 🚀 High | **Nim** | Jester | ~11,000+ | Python-like syntax, compiled |
+| 🚀 High | **V** | vweb | ~10,000+ | Fast compilation, performance focus |
+| 🚀 High | **Go** | net/http | ~5,000-10,000 | **Tested: 4998.36 req/s** |
+| ⚡ Good | **Assembly** | x86-64 syscalls | ~9,000+ | Educational implementation |
+| ⚡ Good | **Java** | Spring Boot | ~8,000+ | JVM JIT optimization |
+| ⚡ Good | **Kotlin** | Ktor | ~7,000+ | JVM-based |
+| ⚡ Good | **C#** | ASP.NET Core | ~7,000+ | .NET optimization |
+| ⚡ Good | **Ada** | AWS | ~6,000+ | Enterprise reliability |
+| ⚡ Good | **JavaScript** | Express | ~5,000+ | V8 engine optimization |
+| ⚡ Good | **TypeScript** | Express | ~5,000+ | V8 engine optimization |
+| ✅ Moderate | **Fortran** | Custom | ~4,000+ | Numeric computing focus |
+| ✅ Moderate | **Python** | FastAPI + Uvicorn | ~3,000+ | ASGI async server |
+| ✅ Moderate | **Ruby** | Sinatra + Puma | ~2,500+ | Multi-threaded server |
+| ✅ Moderate | **PHP** | Built-in server | ~2,000+ | Development server |
 
 ### Performance Tiers
 
-Based on the results, languages can be grouped into performance tiers:
+Performance can be categorized into tiers based on expected throughput:
 
 #### 🚀 High Performance (>10,000 req/s)
-- **Rust, C++, Zig, C**: Compiled languages with direct memory control
+- **Rust, C++, Zig, C**: Compiled languages with direct memory control and zero-cost abstractions
 - **Crystal**: Ruby-like syntax with compiled performance
-- **Nim, V**: Modern compiled languages
-- **Go**: Fast compilation, efficient runtime
+- **Nim, V**: Modern compiled languages optimized for performance
 
-#### ⚡ Very Good Performance (5,000-10,000 req/s)
+#### ⚡ Good Performance (5,000-10,000 req/s)
+- **Go**: Fast compilation, efficient runtime, excellent concurrency (**Tested: 4998 req/s**)
 - **Assembly**: Direct system calls (educational implementation)
 - **Java, Kotlin**: JVM with JIT optimization
 - **C#**: .NET Core with AOT capabilities
 - **JavaScript, TypeScript**: V8 engine optimization
 
-#### ✅ Good Performance (2,000-5,000 req/s)
+#### ✅ Moderate Performance (2,000-5,000 req/s)
 - **Fortran**: Numeric computing focus
 - **Python**: Uvicorn ASGI server
 - **Ruby**: Puma multi-threaded server
 - **PHP**: Built-in development server
 
-#### 📊 Notes
-- Results vary based on hardware, OS, and configuration
-- Production deployments may show different characteristics
-- All servers are production-optimized builds
-- Single-endpoint benchmark (real applications are more complex)
+### Testing Methodology
+
+**Actual Testing:**
+- Tests were run in a CI/CD environment with limited resources
+- Go was successfully tested with actual benchmark results: **4998.36 req/s**
+- Other languages may require additional dependencies or have build constraints in CI
+
+**Expected Performance:**
+- Rankings are based on typical performance characteristics, industry benchmarks, and framework specifications
+- Actual results will vary based on:
+  - Hardware specifications (CPU, RAM, storage)
+  - Operating system and kernel version
+  - Network configuration
+  - Docker overhead
+  - Concurrent load patterns
+  - Request/response payload sizes
+
+**To Get Accurate Results for Your Environment:**
+```bash
+# Run standard benchmarks
+./benchmark-all.sh
+
+# Run comprehensive stress tests with resource monitoring
+./benchmark-stress-all.sh
+```
+
+#### 📊 Important Notes
+- Benchmarks represent single-endpoint performance (real applications are more complex)
+- Results shown are indicative of relative performance between languages
+- All server implementations use production-optimized builds
+- Performance characteristics may differ significantly in production environments
+- Consider factors beyond raw speed: memory safety, development velocity, ecosystem maturity
 
 ### Running Your Own Benchmarks
 

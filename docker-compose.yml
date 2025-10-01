@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  rust:
+    build: ./rust
+    ports:
+      - "8080:8080"
+    container_name: benchmark-rust
+    
+  go:
+    build: ./go
+    ports:
+      - "8081:8080"
+    container_name: benchmark-go
+    
+  python:
+    build: ./python
+    ports:
+      - "8082:8080"
+    container_name: benchmark-python
+    
+  javascript:
+    build: ./javascript
+    ports:
+      - "8083:8080"
+    container_name: benchmark-javascript
+    
+  typescript:
+    build: ./typescript
+    ports:
+      - "8084:8080"
+    container_name: benchmark-typescript
+    
+  java:
+    build: ./java
+    ports:
+      - "8085:8080"
+    container_name: benchmark-java
+    
+  csharp:
+    build: ./csharp
+    ports:
+      - "8086:8080"
+    container_name: benchmark-csharp
+    
+  ruby:
+    build: ./ruby
+    ports:
+      - "8087:8080"
+    container_name: benchmark-ruby
+    
+  php:
+    build: ./php
+    ports:
+      - "8088:8080"
+    container_name: benchmark-php
+    
+  c:
+    build: ./c
+    ports:
+      - "8089:8080"
+    container_name: benchmark-c
+    
+  cpp:
+    build: ./cpp
+    ports:
+      - "8090:8080"
+    container_name: benchmark-cpp
+    
+  kotlin:
+    build: ./kotlin
+    ports:
+      - "8091:8080"
+    container_name: benchmark-kotlin
+    
+  zig:
+    build: ./zig
+    ports:
+      - "8092:8080"
+    container_name: benchmark-zig
+    
+  nim:
+    build: ./nim
+    ports:
+      - "8093:8080"
+    container_name: benchmark-nim
+    
+  crystal:
+    build: ./crystal
+    ports:
+      - "8094:8080"
+    container_name: benchmark-crystal
+    
+  v:
+    build: ./v
+    ports:
+      - "8095:8080"
+    container_name: benchmark-v
+    
+  ada:
+    build: ./ada
+    ports:
+      - "8096:8080"
+    container_name: benchmark-ada
+    
+  fortran:
+    build: ./fortran
+    ports:
+      - "8097:8080"
+    container_name: benchmark-fortran
+    
+  assembly:
+    build: ./assembly
+    ports:
+      - "8098:8080"
+    container_name: benchmark-assembly

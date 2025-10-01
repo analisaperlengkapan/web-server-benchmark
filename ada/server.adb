@@ -15,7 +15,8 @@ procedure Server is
       else
          return AWS.Response.Build
            (Content_Type => AWS.MIME.Text_Plain,
-            Message_Body => "Not found");
+            Message_Body => "Not found",
+            Status_Code  => AWS.Messages.S404);
       end if;
    end Hello_CB;
 

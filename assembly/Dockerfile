@@ -1,5 +1,5 @@
 FROM debian:bookworm-slim as builder
-RUN apt-get update && apt-get install -y nasm
+RUN apt-get update && apt-get install -y nasm binutils
 WORKDIR /app
 COPY server.asm ./
 RUN nasm -f elf64 server.asm && ld -o server server.o

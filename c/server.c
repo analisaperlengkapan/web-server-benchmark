@@ -32,7 +32,7 @@ int main() {
         return 1;
 
     printf("Server running on port %d\n", PORT);
-    getchar();
+    pause();
 
     MHD_stop_daemon(daemon);
     return 0;

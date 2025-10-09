@@ -7,7 +7,8 @@ struct App {
 	vweb.Context
 }
 
-pub fn (mut app App) index() vweb.Result {
+@['/hello']
+pub fn (mut app App) hello() vweb.Result {
 	app.set_content_type('application/json')
 	response := json.encode({'message': 'Hello, world!'})
 	return app.text(response)

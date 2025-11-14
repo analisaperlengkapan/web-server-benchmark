@@ -5,7 +5,7 @@ RUN dotnet restore
 COPY Program.cs ./
 RUN dotnet publish -c Release -o out
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=builder /app/out .
 EXPOSE 8080

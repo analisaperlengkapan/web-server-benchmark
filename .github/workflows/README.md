@@ -1,5 +1,7 @@
 # GitHub Actions Workflows
 
+This repository uses several automated workflows to ensure code quality and track performance metrics.
+
 ## test-languages.yml
 
 This workflow automatically tests all 19 language implementations in the repository to ensure they can be built/compiled without errors.
@@ -58,3 +60,63 @@ When adding a new language implementation:
 2. Add source code and Dockerfile
 3. Add a new job to `test-languages.yml` following the pattern of existing jobs
 4. Ensure the job includes appropriate setup actions and build/test commands
+
+## benchmark-weekly.yml
+
+This workflow automatically runs comprehensive benchmarks every Monday and creates a pull request with the updated results.
+
+### Trigger Events
+
+- **Scheduled**: Every Monday at 00:00 UTC (using cron: `0 0 * * 1`)
+- **Manual**: Can be triggered manually via `workflow_dispatch` from the Actions tab
+
+### Workflow Steps
+
+1. **Setup Phase**
+   - Checkout repository
+   - Set up Docker with buildx
+   - Install Apache Bench for benchmarking
+   - Make benchmark scripts executable
+
+2. **Benchmark Execution**
+   - Run `benchmark-all.sh` to test all language implementations
+   - Continue even if some benchmarks fail
+   - Format results (if format script is available)
+
+3. **Results Processing**
+   - Generate timestamp for tracking
+   - Create formatted benchmark summary in Markdown
+   - Parse results into comparison table
+   - Include success/failure status for each language
+
+4. **Pull Request Creation**
+   - Automatically create PR with results
+   - Include detailed summary with performance metrics
+   - Label PR with: `benchmark`, `automated`, `weekly-update`
+   - Add files: `benchmark_results.txt`, `benchmark_summary.md`, `stress_test_results/`
+
+5. **Artifact Upload**
+   - Upload benchmark results as artifacts
+   - 90-day retention period for historical tracking
+
+### Purpose
+
+This automated workflow provides:
+- **Regular performance tracking** - Weekly benchmarks for consistent data
+- **Trend analysis** - Historical artifacts enable performance trend monitoring
+- **Visibility** - Automated PRs ensure results are reviewed
+- **Regression detection** - Early warning of performance degradations
+
+### Manual Triggering
+
+To run benchmarks manually:
+1. Go to the **Actions** tab in GitHub
+2. Select **Weekly Benchmark Automation** workflow
+3. Click **Run workflow** button
+4. Select branch and click **Run workflow**
+
+### Permissions
+
+The workflow requires:
+- `contents: write` - To create commits with benchmark results
+- `pull-requests: write` - To create pull requests

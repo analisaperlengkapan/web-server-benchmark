@@ -14,35 +14,35 @@ jobs:
   run-benchmarks:
     runs-on: ubuntu-latest
     timeout-minutes: 180 # 3 hours timeout for comprehensive benchmarks
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Set up Docker
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Install Apache Bench
         run: |
           sudo apt-get update
           sudo apt-get install -y apache2-utils
-      
+
       - name: Make benchmark scripts executable
         run: |
           chmod +x benchmark-all.sh
           chmod +x benchmark-stress-all.sh
           chmod +x format_results.sh
           chmod +x create_benchmark_results.sh
-      
+
       - name: Run comprehensive benchmarks
         run: |
           echo "Starting benchmark suite..."
           # Run the benchmark-all script which benchmarks all languages
           ./benchmark-all.sh || echo "Some benchmarks may have failed, continuing..."
         continue-on-error: true
-      
+
       - name: Format results
         run: |
           # If format_results.sh exists and is executable, run it
@@ -50,13 +50,13 @@ jobs:
             ./format_results.sh || echo "Result formatting completed with warnings"
           fi
         continue-on-error: true
-      
+
       - name: Generate benchmark timestamp
         id: timestamp
         run: |
           echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
           echo "datetime=$(date +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
-      
+
       - name: Create benchmark results summary
         run: |
           echo "# Benchmark Results - ${{ steps.timestamp.outputs.datetime }}" > benchmark_summary.md
@@ -65,13 +65,13 @@ jobs:
           echo "" >> benchmark_summary.md
           echo "Automated weekly benchmark run completed." >> benchmark_summary.md
           echo "" >> benchmark_summary.md
-          
+
           if [ -f benchmark_results.txt ]; then
             echo "## Results Summary" >> benchmark_summary.md
             echo "" >> benchmark_summary.md
             echo "| Language | Req/sec | Time/req (ms) | Status |" >> benchmark_summary.md
             echo "|----------|---------|---------------|--------|" >> benchmark_summary.md
-            
+
             # Parse and format results
             while IFS='|' read -r lang rps tpr tr fr; do
               if [ "$rps" = "BUILD_FAILED" ] || [ "$rps" = "SERVER_FAILED" ]; then
@@ -81,84 +81,62 @@ jobs:
               fi
             done < benchmark_results.txt
           fi
-          
+
           echo "" >> benchmark_summary.md
           echo "---" >> benchmark_summary.md
           echo "*Generated automatically by GitHub Actions*" >> benchmark_summary.md
-      
-      - name: Check for changes
-        id: check_changes
-        run: |
-          git diff --quiet benchmark_results.txt || echo "changes=true" >> $GITHUB_OUTPUT
-          echo "has_changes=$(git diff --quiet && echo 'false' || echo 'true')" >> $GITHUB_OUTPUT
-      
-      - name: Configure Git
-        if: steps.check_changes.outputs.has_changes == 'true'
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-      
-      - name: Create or update benchmark results branch
-        if: steps.check_changes.outputs.has_changes == 'true'
-        run: |
-          # Create a new branch for the benchmark results
-          BRANCH_NAME="benchmark-results-${{ steps.timestamp.outputs.date }}"
-          git checkout -b "$BRANCH_NAME"
-          
-          # Add the results files
-          git add benchmark_results.txt benchmark_summary.md || true
-          git add stress_test_results/ || true
-          
-          # Commit changes
-          git commit -m "chore: update benchmark results - ${{ steps.timestamp.outputs.datetime }}" || exit 0
-          
-          # Push the branch
-          git push origin "$BRANCH_NAME"
-          
-          # Save branch name for PR creation
-          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-      
-      - name: Create Pull Request
-        if: steps.check_changes.outputs.has_changes == 'true'
+
+      - name: Create Pull Request with benchmark results
+        id: create_pr
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ env.BRANCH_NAME }}
+          commit-message: "chore: update benchmark results - ${{ steps.timestamp.outputs.datetime }}"
+          branch: benchmark-results-${{ steps.timestamp.outputs.date }}
+          delete-branch: true
           base: main
           title: "📊 Weekly Benchmark Results - ${{ steps.timestamp.outputs.date }}"
           body: |
             ## Automated Weekly Benchmark Results
-            
+
             This PR contains the benchmark results from the automated weekly run on ${{ steps.timestamp.outputs.datetime }}.
-            
+
             ### Summary
-            
+
             - **Date**: ${{ steps.timestamp.outputs.datetime }}
             - **Workflow**: Weekly Benchmark Automation
             - **Trigger**: Scheduled (Monday 00:00 UTC)
-            
+
             ### Changes
-            
+
             - Updated `benchmark_results.txt` with latest performance metrics
             - Generated `benchmark_summary.md` with formatted results
             - Included stress test results (if applicable)
-            
+
             ### Review Notes
-            
+
             - Please review the benchmark results for any significant performance changes
             - Check for any failed builds or tests
             - Consider updating the README if there are notable improvements or regressions
-            
+
             ---
-            
+
             *This PR was created automatically by the Weekly Benchmark Automation workflow.*
           labels: |
             benchmark
             automated
             weekly-update
-          assignees: ""
-          reviewers: ""
-      
+          add-paths: |
+            benchmark_results.txt
+            benchmark_summary.md
+            stress_test_results/
+
+      - name: PR creation result
+        if: steps.create_pr.outputs.pull-request-number
+        run: |
+          echo "Pull Request created: #${{ steps.create_pr.outputs.pull-request-number }}"
+          echo "PR URL: ${{ steps.create_pr.outputs.pull-request-url }}"
+
       - name: Upload benchmark artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -169,7 +147,7 @@ jobs:
             benchmark_summary.md
             stress_test_results/
           retention-days: 90
-      
+
       - name: Workflow summary
         if: always()
         run: |
@@ -177,16 +155,16 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Date**: ${{ steps.timestamp.outputs.datetime }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Status**: Completed" >> $GITHUB_STEP_SUMMARY
-          
+
           if [ -f benchmark_results.txt ]; then
             echo "- **Results**: Generated successfully" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### Quick Stats" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            
+
             success_count=$(grep -v "BUILD_FAILED\|SERVER_FAILED" benchmark_results.txt | wc -l || echo "0")
             failed_count=$(grep -E "BUILD_FAILED|SERVER_FAILED" benchmark_results.txt | wc -l || echo "0")
-            
+
             echo "- Successful benchmarks: $success_count" >> $GITHUB_STEP_SUMMARY
             echo "- Failed benchmarks: $failed_count" >> $GITHUB_STEP_SUMMARY
           else

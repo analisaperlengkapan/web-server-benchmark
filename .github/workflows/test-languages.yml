@@ -84,7 +84,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Nim
-        uses: jiro4989/setup-nim-action@v1
+        uses: jiro4989/setup-nim-action@v2
         with:
           nim-version: '2.0.0'
       - name: Install dependencies

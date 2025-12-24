@@ -2,7 +2,7 @@ with AWS.Server;
 with AWS.Response;
 with AWS.Status;
 with AWS.MIME;
-
+with AWS.Messages;
 procedure Server is
 
    function Hello_CB (Request : AWS.Status.Data) return AWS.Response.Data is
@@ -23,6 +23,12 @@ procedure Server is
    WS : AWS.Server.HTTP;
 
 begin
-   AWS.Server.Start (WS, "Hello Server", Hello_CB'Unrestricted_Access, Port => 8080);
+   AWS.Server.Start
+     (Web_Server => WS,
+      Name       => "Hello Server",
+      Callback   => Hello_CB'Unrestricted_Access,
+      Port       => 8080,
+      Security   => False);
+
    AWS.Server.Wait (AWS.Server.Forever);
 end Server;

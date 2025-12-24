@@ -1,14 +1,9 @@
-FROM node:25-alpine as builder
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y nodejs npm && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY package.json tsconfig.json ./
+COPY package*.json ./
 RUN npm install
-COPY server.ts ./
+COPY . .
 RUN npm run build
-
-FROM node:25-alpine
-WORKDIR /app
-COPY package.json ./
-RUN npm install --production
-COPY --from=builder /app/dist ./dist
 EXPOSE 8080
 CMD ["node", "dist/server.js"]

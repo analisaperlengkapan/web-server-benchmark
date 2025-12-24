@@ -1,0 +1,12 @@
+with "aws";
+
+project Server is
+   for Source_Dirs use (".");
+   for Main use ("server.adb");
+   for Object_Dir use ".";
+   for Exec_Dir use ".";
+
+   package Compiler is
+      for Default_Switches ("Ada") use ("-O3", "-gnatn", "-gnatp");
+   end Compiler;
+end Server;

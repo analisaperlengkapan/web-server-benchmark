@@ -1,12 +1,18 @@
-FROM mcr.microsoft.com/dotnet/sdk:10.0 as builder
-WORKDIR /app
-COPY csharp-server.csproj ./
-RUN dotnet restore
-COPY Program.cs ./
-RUN dotnet publish -c Release -o out
+FROM debian:bookworm-slim
+# Install dotnet
+RUN apt-get update && apt-get install -y wget && \
+    wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
+    dpkg -i packages-microsoft-prod.deb && \
+    rm packages-microsoft-prod.deb && \
+    apt-get update && \
+    apt-get install -y dotnet-sdk-8.0 && \
+    rm -rf /var/lib/apt/lists/*
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
-COPY --from=builder /app/out .
+COPY . ./
+# Publish self-contained for linux-x64
+RUN dotnet publish -c Release -r linux-x64 --self-contained true -o out
+
 EXPOSE 8080
-CMD ["dotnet", "csharp-server.dll"]
+# Execute the binary directly
+CMD ["./out/csharp-server"]

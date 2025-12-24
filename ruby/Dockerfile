@@ -1,7 +1,8 @@
-FROM ruby:3.4-slim
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y ruby-full build-essential ruby-dev && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY Gemfile ./
-RUN bundle install
+RUN gem install bundler && bundle install
 COPY server.rb ./
 EXPOSE 8080
-CMD ["ruby", "server.rb"]
+CMD ["bundle", "exec", "ruby", "server.rb"]

@@ -1,11 +1,11 @@
-FROM nimlang/nim:2.0.0-alpine as builder
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y nim git && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY nim-server.nimble ./
+# Install Jester manually or via nimble
 RUN nimble install -y jester
 COPY server.nim ./
-RUN nim c -d:release --opt:speed server.nim && ls -la
+RUN nim c -d:release --opt:speed server.nim
 
-FROM alpine:latest
-COPY --from=builder /app/server /server
 EXPOSE 8080
-CMD ["/server"]
+CMD ["./server"]

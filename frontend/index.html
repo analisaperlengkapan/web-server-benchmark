@@ -1,0 +1,110 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benchmark Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .container { max_width: 800px; margin: 0 auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Benchmark Results</h1>
+        <canvas id="benchmarkChart"></canvas>
+        <table>
+            <thead>
+                <tr>
+                    <th>Language</th>
+                    <th>Requests/sec</th>
+                    <th>Avg Latency (ms)</th>
+                    <th>Peak CPU (%)</th>
+                    <th>Peak Memory</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td>C</td>
+                    <td>13987.69</td>
+                    <td>35.746</td>
+                    <td>69.58</td>
+                    <td>8.777MiB</td>
+                </tr>
+
+                <tr>
+                    <td>Crystal</td>
+                    <td>10328.92</td>
+                    <td>48.408</td>
+                    <td>74.66</td>
+                    <td>32.96MiB</td>
+                </tr>
+
+                <tr>
+                    <td>Rust</td>
+                    <td>11614.35</td>
+                    <td>43.05</td>
+                    <td>97.1</td>
+                    <td>9.57MiB</td>
+                </tr>
+
+                <tr>
+                    <td>Go</td>
+                    <td>10258.75</td>
+                    <td>48.739</td>
+                    <td>107.88</td>
+                    <td>13.99MiB</td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+    <script>
+        const ctx = document.getElementById('benchmarkChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['C', 'Crystal', 'Rust', 'Go'],
+                datasets: [{
+                    label: 'Requests/sec',
+                    data: [13987.69, 10328.92, 11614.35, 10258.75],
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y'
+                }, {
+                    label: 'Latency (ms)',
+                    data: [35.746, 48.408, 43.05, 48.739],
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'Requests/sec' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: { drawOnChartArea: false },
+                        title: { display: true, text: 'Latency (ms)' }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

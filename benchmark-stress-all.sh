@@ -43,3 +43,6 @@ for LANG in "${LANGUAGES[@]}"; do
 done
 
 cat stress_summary.md
+
+echo "Generating Report..."
+python3 frontend/generate_report.py

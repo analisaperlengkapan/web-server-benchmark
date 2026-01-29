@@ -1,4 +1,4 @@
-FROM alpine:latest as builder
+FROM alpine:3.23.3 as builder
 RUN apk add --no-cache wget tar xz
 RUN wget https://ziglang.org/download/0.11.0/zig-linux-x86_64-0.11.0.tar.xz && \
     tar -xf zig-linux-x86_64-0.11.0.tar.xz && \
@@ -7,7 +7,7 @@ WORKDIR /app
 COPY server.zig ./
 RUN /zig/zig build-exe server.zig -O ReleaseFast
 
-FROM alpine:latest
+FROM alpine:3.23.3
 COPY --from=builder /app/server /server
 EXPOSE 8080
 CMD ["/server"]

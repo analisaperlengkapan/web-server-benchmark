@@ -1,13 +1,15 @@
 section .data
     response db 'HTTP/1.1 200 OK', 13, 10
              db 'Content-Type: application/json', 13, 10
+             db 'Content-Length: 27', 13, 10
+             db 'Connection: close', 13, 10
              db 13, 10
              db '{"message":"Hello, world!"}', 0
     response_len equ $ - response
     
     sockaddr:
         dw 2                    ; AF_INET
-        dw 0x901f              ; Port 8080 in network byte order
+        dw 0x901f              ; Port 8080 (network byte order: 0x1f90)
         dd 0                    ; INADDR_ANY
         times 8 db 0           ; padding
 
@@ -37,7 +39,7 @@ _start:
     ; Listen
     mov rax, 50            ; sys_listen
     mov rdi, r12           ; socket fd
-    mov rsi, 10            ; backlog
+    mov rsi, 128           ; backlog (increased from 10)
     syscall
     
 accept_loop:

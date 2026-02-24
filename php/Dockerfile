@@ -1,6 +1,10 @@
-FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y php-cli php-common && rm -rf /var/lib/apt/lists/*
+FROM php:8.3-cli-alpine
+RUN apk add --no-cache libstdc++ && \
+    docker-php-ext-install pcntl posix
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /app
-COPY index.php ./
+COPY composer.json ./
+RUN composer install --no-dev --optimize-autoloader
+COPY server.php ./
 EXPOSE 8080
-CMD ["php", "-S", "0.0.0.0:8080", "index.php"]
+CMD ["php", "server.php", "start"]

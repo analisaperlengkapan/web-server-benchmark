@@ -11,9 +11,11 @@ pub fn main() !void {
     defer pool.deinit();
 
     const address = try net.Address.parseIp("0.0.0.0", 8080);
-    var server = net.StreamServer.init(.{ .reuse_address = true });
+    // In Zig 0.13.0, use address.listen instead of StreamServer.init
+    var server = try address.listen(.{
+        .reuse_address = true,
+    });
     defer server.deinit();
-    try server.listen(address);
 
     const stdout = std.io.getStdOut().writer();
     try stdout.print("Server running on port 8080\n", .{});
@@ -24,7 +26,7 @@ pub fn main() !void {
     }
 }
 
-fn handleConnection(connection: net.StreamServer.Connection) void {
+fn handleConnection(connection: net.Server.Connection) void {
     defer connection.stream.close();
 
     var buffer: [1024]u8 = undefined;
@@ -33,7 +35,6 @@ fn handleConnection(connection: net.StreamServer.Connection) void {
     while (true) {
         // Read request
         const bytes_read = connection.stream.read(&buffer) catch |err| {
-            // End of stream or other error means we close
             _ = err;
             return;
         };
@@ -47,7 +48,6 @@ fn handleConnection(connection: net.StreamServer.Connection) void {
             const response = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 27\r\nConnection: keep-alive\r\n\r\n{\"message\":\"Hello, world!\"}";
             connection.stream.writeAll(response) catch return;
         } else {
-            // Not found - close connection usually, but here we just 404 and maybe close
             const response = "HTTP/1.1 404 Not Found\r\nContent-Length: 9\r\nConnection: close\r\n\r\nNot found";
             _ = connection.stream.writeAll(response) catch {};
             return;

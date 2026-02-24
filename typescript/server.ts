@@ -13,7 +13,7 @@ const start = async () => {
     await fastify.listen({ port: 8080, host: '0.0.0.0' });
     console.log('Server running on port 8080');
   } catch (err) {
-    fastify.log.error(err);
+    console.error(err);
     process.exit(1);
   }
 };

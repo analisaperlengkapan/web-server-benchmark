@@ -4,7 +4,7 @@ section .data
              db 'Content-Length: 27', 13, 10
              db 'Connection: close', 13, 10
              db 13, 10
-             db '{"message":"Hello, world!"}', 0
+             db '{"message":"Hello, world!"}'
     response_len equ $ - response
     
     sockaddr:

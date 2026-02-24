@@ -5,7 +5,7 @@ RUN wget https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz && \
     mv zig-linux-x86_64-0.13.0 /zig
 WORKDIR /app
 COPY server.zig ./
-RUN /zig/zig build-exe server.zig -O ReleaseFast -fstrip
+RUN /zig/zig build-exe server.zig -O ReleaseFast -fstrip -lc
 
 FROM alpine:latest
 COPY --from=builder /app/server /server

@@ -34,10 +34,7 @@ fn handleConnection(connection: net.Server.Connection) void {
     // Keep-alive loop
     while (true) {
         // Read request
-        const bytes_read = connection.stream.read(&buffer) catch |err| {
-            _ = err;
-            return;
-        };
+        const bytes_read = connection.stream.read(&buffer) catch return;
 
         if (bytes_read == 0) return;
 

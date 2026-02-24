@@ -80,3 +80,4 @@ benchmark_results.txt
 benchmark_table.md
 stress_test_results/
 real_benchmark_results.txt
+php/vendor/

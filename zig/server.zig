@@ -7,7 +7,8 @@ pub fn main() !void {
     const allocator = gpa.allocator();
 
     var pool: std.Thread.Pool = undefined;
-    try pool.init(.{ .allocator = allocator });
+    // Increase thread pool size to handle blocking I/O for concurrent connections
+    try pool.init(.{ .allocator = allocator, .n_jobs = 512 });
     defer pool.deinit();
 
     const address = try net.Address.parseIp("0.0.0.0", 8080);

@@ -22,11 +22,7 @@ pub fn main() !void {
 
     while (true) {
         const connection = try server.accept();
-        pool.spawn(handleConnection, .{connection}) catch {
-            connection.stream.close();
-            continue;
-        };
-
+        try pool.spawn(handleConnection, .{connection});
     }
 }
 
@@ -35,23 +31,19 @@ fn handleConnection(connection: net.Server.Connection) void {
 
     var buffer: [1024]u8 = undefined;
 
-    // Keep-alive loop
-    while (true) {
-        // Read request
-        const bytes_read = connection.stream.read(&buffer) catch return;
+    // Read request
+    const bytes_read = connection.stream.read(&buffer) catch return;
 
-        if (bytes_read == 0) return;
+    if (bytes_read == 0) return;
 
-        const request = buffer[0..bytes_read];
+    const request = buffer[0..bytes_read];
 
-        // Check for GET /hello
-        if (std.mem.indexOf(u8, request, "GET /hello ") != null) {
-            const response = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 27\r\nConnection: keep-alive\r\n\r\n{\"message\":\"Hello, world!\"}";
-            connection.stream.writeAll(response) catch return;
-        } else {
-            const response = "HTTP/1.1 404 Not Found\r\nContent-Length: 9\r\nConnection: close\r\n\r\nNot found";
-            _ = connection.stream.writeAll(response) catch {};
-            return;
-        }
+    // Check for GET /hello
+    if (std.mem.indexOf(u8, request, "GET /hello ") != null) {
+        const response = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 27\r\nConnection: close\r\n\r\n{\"message\":\"Hello, world!\"}";
+        _ = connection.stream.writeAll(response) catch {};
+    } else {
+        const response = "HTTP/1.1 404 Not Found\r\nContent-Length: 9\r\nConnection: close\r\n\r\nNot found";
+        _ = connection.stream.writeAll(response) catch {};
     }
 }

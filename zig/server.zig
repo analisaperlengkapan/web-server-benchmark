@@ -22,7 +22,11 @@ pub fn main() !void {
 
     while (true) {
         const connection = try server.accept();
-        try pool.spawn(handleConnection, .{connection});
+        pool.spawn(handleConnection, .{connection}) catch {
+            connection.stream.close();
+            continue;
+        };
+
     }
 }
 

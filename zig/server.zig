@@ -2,13 +2,12 @@ const std = @import("std");
 const net = std.net;
 
 pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    // Use c_allocator for better performance in benchmarks
+    const allocator = std.heap.c_allocator;
 
     var pool: std.Thread.Pool = undefined;
-    // Increase thread pool size to handle blocking I/O for concurrent connections
-    try pool.init(.{ .allocator = allocator, .n_jobs = 512 });
+    // Use default thread pool size (approx CPU cores) for optimal performance with non-blocking I/O or efficient scheduling
+    try pool.init(.{ .allocator = allocator });
     defer pool.deinit();
 
     const address = try net.Address.parseIp("0.0.0.0", 8080);

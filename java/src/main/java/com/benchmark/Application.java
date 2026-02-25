@@ -1,22 +1,31 @@
 package com.benchmark;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Vertx;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.ext.web.Router;
 
-import java.util.Map;
+public class Application extends AbstractVerticle {
 
-@SpringBootApplication
-@RestController
-public class Application {
+  @Override
+  public void start() {
+    Router router = Router.router(vertx);
 
-    @GetMapping("/hello")
-    public Map<String, String> hello() {
-        return Map.of("message", "Hello, world!");
-    }
+    router.get("/hello").handler(ctx -> {
+      ctx.response()
+        .putHeader("content-type", "application/json")
+        .end("{\"message\":\"Hello, world!\"}");
+    });
 
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
+    vertx.createHttpServer()
+      .requestHandler(router)
+      .listen(8080);
+  }
+
+  public static void main(String[] args) {
+    Vertx vertx = Vertx.vertx();
+    int procs = Runtime.getRuntime().availableProcessors();
+    vertx.deployVerticle(Application.class.getName(), new DeploymentOptions().setInstances(procs));
+    System.out.println("Server started on port 8080 with " + procs + " instances");
+  }
 }

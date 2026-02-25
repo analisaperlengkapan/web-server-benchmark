@@ -1,6 +1,8 @@
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateSlimBuilder(args);
 var app = builder.Build();
 
-app.MapGet("/hello", () => new { message = "Hello, world!" });
+var response = new { message = "Hello, world!" };
+
+app.MapGet("/hello", () => response);
 
 app.Run("http://0.0.0.0:8080");

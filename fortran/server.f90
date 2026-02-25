@@ -110,7 +110,7 @@ program http_server
     end if
 
     ! 3. Listen
-    ret = listen(server_fd, 10)
+    ret = listen(server_fd, 128)
     if (ret < 0) then
         print *, "Error listening"
         stop

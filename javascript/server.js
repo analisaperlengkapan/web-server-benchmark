@@ -1,10 +1,15 @@
-const express = require('express');
-const app = express();
-
-app.get('/hello', (req, res) => {
-  res.json({ message: 'Hello, world!' });
+const fastify = require('fastify')({
+  logger: false
 });
 
-app.listen(8080, '0.0.0.0', () => {
-  console.log('Server running on port 8080');
+fastify.get('/hello', async (request, reply) => {
+  return { message: 'Hello, world!' };
+});
+
+fastify.listen({ port: 8080, host: '0.0.0.0' }, (err, address) => {
+  if (err) {
+    console.error(err);
+    process.exit(1);
+  }
+  console.log(`Server listening on ${address}`);
 });

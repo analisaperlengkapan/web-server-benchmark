@@ -3,7 +3,7 @@ import std/[asynchttpserver, asyncdispatch]
 proc cb(req: Request) {.async, gcsafe.} =
   if req.url.path == "/hello":
     let headers = newHttpHeaders([("Content-Type", "application/json")])
-    await req.respond(Http200, """{"message":"Hello, world!"}""", headers)
+    await req.respond(Http200, """{"message": "Hello, world!"}""", headers)
   else:
     await req.respond(Http404, "Not Found")
 

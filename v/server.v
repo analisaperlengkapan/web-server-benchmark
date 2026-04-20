@@ -1,20 +1,23 @@
 module main
 
-import vweb
+import veb
 import json
 
-struct App {
-	vweb.Context
+pub struct Context {
+	veb.Context
+}
+
+pub struct App {
 }
 
 @['/hello']
-pub fn (mut app App) hello() vweb.Result {
-	app.set_content_type('application/json')
+pub fn (_ &App) hello(mut ctx Context) veb.Result {
+	ctx.content_type = .json
 	response := json.encode({'message': 'Hello, world!'})
-	return app.text(response)
+	return ctx.text(response)
 }
 
 fn main() {
-	mut app := &App{}
-	vweb.run(app, 8080)
+	app := &App{}
+	veb.run[App, Context](app, 8080)
 }

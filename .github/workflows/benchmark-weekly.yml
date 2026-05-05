@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -33,8 +33,8 @@ jobs:
         run: |
           chmod +x benchmark-all.sh
           chmod +x benchmark-stress-all.sh
-          chmod +x format_results.sh
-          chmod +x create_benchmark_results.sh
+          [ -f format_results.sh ] && chmod +x format_results.sh || true
+          [ -f create_benchmark_results.sh ] && chmod +x create_benchmark_results.sh || true
 
       - name: Run comprehensive benchmarks
         run: |
@@ -88,7 +88,7 @@ jobs:
 
       - name: Create Pull Request with benchmark results
         id: create_pr
-        uses: peter-evans/create-pull-request@v8
+        uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore: update benchmark results - ${{ steps.timestamp.outputs.datetime }}"
@@ -139,7 +139,7 @@ jobs:
 
       - name: Upload benchmark artifacts
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: benchmark-results-${{ steps.timestamp.outputs.date }}
           path: |

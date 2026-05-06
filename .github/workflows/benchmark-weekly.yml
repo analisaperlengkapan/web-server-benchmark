@@ -57,6 +57,10 @@ jobs:
           echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
           echo "datetime=$(date +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
 
+      - name: Ensure benchmark results file exists
+        run: |
+          touch benchmark_results.txt
+
       - name: Create benchmark results summary
         run: |
           echo "# Benchmark Results - ${{ steps.timestamp.outputs.datetime }}" > benchmark_summary.md
@@ -129,7 +133,6 @@ jobs:
           add-paths: |
             benchmark_results.txt
             benchmark_summary.md
-            stress_test_results/
 
       - name: PR creation result
         if: steps.create_pr.outputs.pull-request-number
@@ -145,7 +148,6 @@ jobs:
           path: |
             benchmark_results.txt
             benchmark_summary.md
-            stress_test_results/
           retention-days: 90
 
       - name: Workflow summary

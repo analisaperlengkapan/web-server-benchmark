@@ -3,8 +3,6 @@
 # Benchmark all language implementations
 # Usage: ./benchmark-all.sh
 
-set -e
-
 PORT=8080
 URL="http://localhost:${PORT}/hello"
 RESULTS_FILE="benchmark_results.txt"
@@ -50,56 +48,67 @@ echo ""
 # Benchmark each language
 for LANGUAGE in "${LANGUAGES[@]}"; do
     echo -e "${GREEN}=== Benchmarking ${LANGUAGE} ===${NC}"
-    
-    # Build the Docker image
+
+    # Build the Docker image (redirect output to temp log to properly capture exit code)
     echo -e "${YELLOW}Building Docker image...${NC}"
-    if ! docker build -t benchmark-${LANGUAGE} ./${LANGUAGE}/ 2>&1 | tail -5; then
+    BUILD_LOG=$(mktemp /tmp/build_XXXXXX.log)
+    if ! docker build -t benchmark-${LANGUAGE} ./${LANGUAGE}/ > "${BUILD_LOG}" 2>&1; then
         echo -e "${RED}Failed to build ${LANGUAGE}${NC}"
-        echo "${LANGUAGE}: BUILD_FAILED" >> ${RESULTS_FILE}
+        tail -10 "${BUILD_LOG}"
+        rm -f "${BUILD_LOG}"
+        echo "${LANGUAGE}|BUILD_FAILED|||" >> ${RESULTS_FILE}
         echo ""
         continue
     fi
-    
+    tail -3 "${BUILD_LOG}"
+    rm -f "${BUILD_LOG}"
+
     # Start the server
     echo -e "${YELLOW}Starting server...${NC}"
-    CONTAINER_ID=$(docker run -d -p ${PORT}:8080 benchmark-${LANGUAGE})
-    
+    CONTAINER_ID=$(docker run -d -p ${PORT}:8080 benchmark-${LANGUAGE} 2>&1)
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Failed to start ${LANGUAGE} server: ${CONTAINER_ID}${NC}"
+        echo "${LANGUAGE}|SERVER_FAILED|||" >> ${RESULTS_FILE}
+        echo ""
+        continue
+    fi
+
     # Wait for server to be ready
     sleep 5
-    
+
     # Test endpoint
     echo -e "${YELLOW}Testing endpoint...${NC}"
-    RESPONSE=$(curl -s ${URL} || echo "FAILED")
-    if [ "$RESPONSE" == "FAILED" ]; then
+    RESPONSE=$(curl -s --max-time 10 ${URL} 2>/dev/null || echo "FAILED")
+    if [ "$RESPONSE" == "FAILED" ] || [ -z "$RESPONSE" ]; then
         echo -e "${RED}Server failed to respond${NC}"
         docker stop ${CONTAINER_ID} > /dev/null 2>&1
         docker rm ${CONTAINER_ID} > /dev/null 2>&1
-        echo "${LANGUAGE}: SERVER_FAILED" >> ${RESULTS_FILE}
+        echo "${LANGUAGE}|SERVER_FAILED|||" >> ${RESULTS_FILE}
         echo ""
         continue
     fi
     echo "Response: ${RESPONSE}"
-    
+
     # Run benchmark with Apache Bench
     echo -e "${YELLOW}Running benchmark (10000 requests, 100 concurrent)...${NC}"
     AB_OUTPUT=$(ab -n 10000 -c 100 ${URL} 2>&1)
-    
+
     # Extract key metrics
     REQUESTS_PER_SEC=$(echo "$AB_OUTPUT" | grep "Requests per second:" | awk '{print $4}')
     TIME_PER_REQUEST=$(echo "$AB_OUTPUT" | grep "Time per request:" | grep "mean" | head -1 | awk '{print $4}')
     TRANSFER_RATE=$(echo "$AB_OUTPUT" | grep "Transfer rate:" | awk '{print $3}')
     FAILED_REQUESTS=$(echo "$AB_OUTPUT" | grep "Failed requests:" | awk '{print $3}')
-    
+
     # Save results
     echo "${LANGUAGE}|${REQUESTS_PER_SEC}|${TIME_PER_REQUEST}|${TRANSFER_RATE}|${FAILED_REQUESTS}" >> ${RESULTS_FILE}
-    
+
     echo -e "${GREEN}Results: ${REQUESTS_PER_SEC} req/sec, ${TIME_PER_REQUEST} ms/req${NC}"
-    
+
     # Cleanup
     echo -e "${YELLOW}Stopping server...${NC}"
     docker stop ${CONTAINER_ID} > /dev/null 2>&1
     docker rm ${CONTAINER_ID} > /dev/null 2>&1
-    
+
     echo ""
 done
 

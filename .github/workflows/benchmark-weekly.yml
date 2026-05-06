@@ -34,21 +34,14 @@ jobs:
           chmod +x benchmark-all.sh
           chmod +x benchmark-stress-all.sh
           [ -f format_results.sh ] && chmod +x format_results.sh || true
-          [ -f create_benchmark_results.sh ] && chmod +x create_benchmark_results.sh || true
+          [ -f benchmark-stress.sh ] && chmod +x benchmark-stress.sh || true
 
       - name: Run comprehensive benchmarks
         run: |
           echo "Starting benchmark suite..."
           # Run the benchmark-all script which benchmarks all languages
-          ./benchmark-all.sh || echo "Some benchmarks may have failed, continuing..."
-        continue-on-error: true
-
-      - name: Format results
-        run: |
-          # If format_results.sh exists and is executable, run it
-          if [ -x ./format_results.sh ]; then
-            ./format_results.sh || echo "Result formatting completed with warnings"
-          fi
+          ./benchmark-all.sh
+          echo "Benchmark suite completed."
         continue-on-error: true
 
       - name: Generate benchmark timestamp
@@ -67,28 +60,116 @@ jobs:
           echo "" >> benchmark_summary.md
           echo "## Overview" >> benchmark_summary.md
           echo "" >> benchmark_summary.md
-          echo "Automated weekly benchmark run completed." >> benchmark_summary.md
+          echo "Automated weekly benchmark run completed on ${{ steps.timestamp.outputs.datetime }}." >> benchmark_summary.md
           echo "" >> benchmark_summary.md
 
-          if [ -f benchmark_results.txt ]; then
+          if [ -s benchmark_results.txt ]; then
             echo "## Results Summary" >> benchmark_summary.md
             echo "" >> benchmark_summary.md
-            echo "| Language | Req/sec | Time/req (ms) | Status |" >> benchmark_summary.md
-            echo "|----------|---------|---------------|--------|" >> benchmark_summary.md
+            echo "| Rank | Language | Req/sec | Time/req (ms) | Status |" >> benchmark_summary.md
+            echo "|------|----------|---------|---------------|--------|" >> benchmark_summary.md
 
-            # Parse and format results
+            # Parse and format results, sorted by req/sec descending
+            RANK=1
             while IFS='|' read -r lang rps tpr tr fr; do
               if [ "$rps" = "BUILD_FAILED" ] || [ "$rps" = "SERVER_FAILED" ]; then
-                echo "| $lang | N/A | N/A | ❌ $rps |" >> benchmark_summary.md
+                echo "| - | $lang | N/A | N/A | ❌ $rps |" >> benchmark_summary.md
               elif [ -n "$rps" ] && [ -n "$tpr" ]; then
-                echo "| $lang | $rps | $tpr | ✅ Success |" >> benchmark_summary.md
+                echo "| $RANK | $lang | $rps | $tpr | ✅ Success |" >> benchmark_summary.md
+                RANK=$((RANK + 1))
               fi
-            done < benchmark_results.txt
+            done < <(sort -t'|' -k2 -nr benchmark_results.txt)
           fi
 
           echo "" >> benchmark_summary.md
           echo "---" >> benchmark_summary.md
-          echo "*Generated automatically by GitHub Actions*" >> benchmark_summary.md
+          echo "*Generated automatically by GitHub Actions on ${{ steps.timestamp.outputs.datetime }}*" >> benchmark_summary.md
+
+      - name: Update README with new benchmark results
+        run: |
+          python3 << 'PYEOF'
+          import re, sys
+
+          # Language display names
+          LANG_DISPLAY = {
+              'c': 'C', 'cpp': 'C++', 'csharp': 'C#', 'go': 'Go', 'rust': 'Rust',
+              'javascript': 'JavaScript', 'typescript': 'TypeScript', 'java': 'Java',
+              'kotlin': 'Kotlin', 'python': 'Python', 'ruby': 'Ruby', 'php': 'PHP',
+              'nim': 'Nim', 'v': 'V', 'zig': 'Zig', 'crystal': 'Crystal',
+              'fortran': 'Fortran', 'ada': 'Ada', 'assembly': 'Assembly',
+          }
+
+          # Framework/Library mapping
+          FRAMEWORKS = {
+              'c': 'libmicrohttpd', 'crystal': 'HTTP::Server', 'rust': 'Actix-web',
+              'go': 'net/http', 'zig': 'Custom (std/http)', 'cpp': 'Crow',
+              'php': 'Built-in server', 'v': 'vweb', 'kotlin': 'Ktor',
+              'java': 'Spring Boot', 'python': 'FastAPI + Uvicorn',
+              'javascript': 'Express', 'ruby': 'Sinatra + Puma',
+              'typescript': 'Express', 'nim': 'httpbeast',
+              'fortran': 'iso_c_binding', 'csharp': 'ASP.NET Core',
+              'ada': 'AWS', 'assembly': 'Raw syscall',
+          }
+
+          # Parse benchmark results
+          results = []
+          try:
+              with open('benchmark_results.txt') as f:
+                  for line in f:
+                      line = line.strip()
+                      if not line:
+                          continue
+                      parts = line.split('|')
+                      if len(parts) >= 3:
+                          lang = parts[0].strip()
+                          rps = parts[1].strip()
+                          tpr = parts[2].strip()
+                          if rps not in ('BUILD_FAILED', 'SERVER_FAILED', ''):
+                              try:
+                                  results.append((lang, float(rps), float(tpr)))
+                              except ValueError:
+                                  pass
+          except FileNotFoundError:
+              print("benchmark_results.txt not found, skipping README update")
+              sys.exit(0)
+
+          if not results:
+              print("No successful benchmark results found, skipping README update")
+              sys.exit(0)
+
+          # Sort by req/sec descending
+          results.sort(key=lambda x: x[1], reverse=True)
+
+          # Generate new table rows
+          header = '| Rank | Language | Framework/Library | Requests/sec | Avg Latency (ms) |'
+          sep    = '|------|----------|-------------------|--------------|------------------|'
+          rows = [header, sep]
+          for rank, (lang, rps, tpr) in enumerate(results, 1):
+              lang_name = LANG_DISPLAY.get(lang, lang.capitalize())
+              framework = FRAMEWORKS.get(lang, 'Unknown')
+              rows.append(f'| {rank} | **{lang_name}** | {framework} | {rps:,.2f} | {tpr:.2f} |')
+          new_table = '\n'.join(rows)
+
+          # Read README
+          with open('README.md') as f:
+              content = f.read()
+
+          # Replace the existing benchmark table
+          # Match from the header row through all subsequent table rows
+          pattern = (
+              r'(\| Rank \| Language \| Framework/Library \| Requests/sec \| Avg Latency \(ms\) \|'
+              r'[^\n]*\n\|[-| ]+\|\n(?:\|[^\n]+\|\n)*)'
+          )
+          match = re.search(pattern, content)
+          if match:
+              new_content = content[:match.start()] + new_table + '\n' + content[match.end():]
+              with open('README.md', 'w') as f:
+                  f.write(new_content)
+              print(f"Updated README.md benchmark table with {len(results)} languages")
+          else:
+              print("Warning: Could not find benchmark table in README.md, skipping update")
+          PYEOF
+        continue-on-error: true
 
       - name: Create Pull Request with benchmark results
         id: create_pr
@@ -115,13 +196,13 @@ jobs:
 
             - Updated `benchmark_results.txt` with latest performance metrics
             - Generated `benchmark_summary.md` with formatted results
-            - Included stress test results (if applicable)
+            - Updated `README.md` with new benchmark rankings and results
 
             ### Review Notes
 
             - Please review the benchmark results for any significant performance changes
             - Check for any failed builds or tests
-            - Consider updating the README if there are notable improvements or regressions
+            - Languages that failed to build or run are recorded in `benchmark_results.txt`
 
             ---
 
@@ -133,6 +214,7 @@ jobs:
           add-paths: |
             benchmark_results.txt
             benchmark_summary.md
+            README.md
 
       - name: PR creation result
         if: steps.create_pr.outputs.pull-request-number
@@ -148,6 +230,8 @@ jobs:
           path: |
             benchmark_results.txt
             benchmark_summary.md
+            README.md
+          if-no-files-found: warn
           retention-days: 90
 
       - name: Workflow summary
@@ -158,17 +242,27 @@ jobs:
           echo "- **Date**: ${{ steps.timestamp.outputs.datetime }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Status**: Completed" >> $GITHUB_STEP_SUMMARY
 
-          if [ -f benchmark_results.txt ]; then
+          if [ -s benchmark_results.txt ]; then
             echo "- **Results**: Generated successfully" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### Quick Stats" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
 
-            success_count=$(grep -v "BUILD_FAILED\|SERVER_FAILED" benchmark_results.txt | wc -l || echo "0")
-            failed_count=$(grep -E "BUILD_FAILED|SERVER_FAILED" benchmark_results.txt | wc -l || echo "0")
+            success_count=$(grep -v "BUILD_FAILED\|SERVER_FAILED" benchmark_results.txt | grep -c '|' || echo "0")
+            failed_count=$(grep -cE "BUILD_FAILED|SERVER_FAILED" benchmark_results.txt || echo "0")
 
-            echo "- Successful benchmarks: $success_count" >> $GITHUB_STEP_SUMMARY
-            echo "- Failed benchmarks: $failed_count" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ Successful benchmarks: $success_count" >> $GITHUB_STEP_SUMMARY
+            echo "- ❌ Failed benchmarks: $failed_count" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Results (sorted by req/sec)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Language | Req/sec | Latency (ms) |" >> $GITHUB_STEP_SUMMARY
+            echo "|----------|---------|--------------|" >> $GITHUB_STEP_SUMMARY
+            sort -t'|' -k2 -nr benchmark_results.txt | while IFS='|' read -r lang rps tpr tr fr; do
+              if [ "$rps" != "BUILD_FAILED" ] && [ "$rps" != "SERVER_FAILED" ] && [ -n "$rps" ]; then
+                echo "| $lang | $rps | $tpr |" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
           else
-            echo "- **Results**: No results file generated" >> $GITHUB_STEP_SUMMARY
+            echo "- **Results**: No results generated" >> $GITHUB_STEP_SUMMARY
           fi

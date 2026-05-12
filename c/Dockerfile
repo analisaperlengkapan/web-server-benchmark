@@ -1,4 +1,4 @@
-FROM gcc:15 as builder
+FROM gcc:16 as builder
 RUN apt-get update && apt-get install -y libmicrohttpd-dev
 WORKDIR /app
 COPY server.c ./

@@ -10,20 +10,18 @@ This benchmark compares production-optimized HTTP server implementations across 
 
 | Rank | Language | Framework/Library | Requests/sec | Avg Latency (ms) |
 |------|----------|-------------------|--------------|------------------|
-| 1 | **C** | libmicrohttpd | 12,438.63 | 8.04 |
-| 2 | **Crystal** | HTTP::Server | 11,968.16 | 8.36 |
-| 3 | **Rust** | Actix-web | 10,857.60 | 9.21 |
-| 4 | **Go** | net/http | 9,012.52 | 11.10 |
-| 5 | **Zig** | Custom (std/http) | 7,053.17 | 14.18 |
-| 6 | **C++** | Crow | 6,063.06 | 16.49 |
-| 7 | **PHP** | Built-in server | 4,746.60 | 21.07 |
-| 8 | **V** | vweb | 3,660.77 | 27.32 |
-| 9 | **Kotlin** | Ktor | 2,622.74 | 38.13 |
-| 10 | **Java** | Spring Boot | 2,538.39 | 39.40 |
-| 11 | **Python** | FastAPI + Uvicorn | 2,062.25 | 48.49 |
-| 12 | **JavaScript** | Express | 1,744.17 | 57.33 |
-| 13 | **Ruby** | Sinatra + Puma | 1,120.42 | 8.93* |
-| 14 | **TypeScript** | Express | 943.47 | 105.99 |
+| 1 | **C** | libmicrohttpd | 11,226.91 | 8.91 |
+| 2 | **Nim** | httpbeast | 10,528.73 | 9.50 |
+| 3 | **Crystal** | HTTP::Server | 10,059.10 | 9.94 |
+| 4 | **Rust** | Actix-web | 9,386.97 | 10.65 |
+| 5 | **Go** | net/http | 9,120.31 | 10.96 |
+| 6 | **C++** | Crow | 7,508.89 | 13.32 |
+| 7 | **TypeScript** | Express | 4,520.36 | 22.12 |
+| 8 | **JavaScript** | Express | 4,195.17 | 23.84 |
+| 9 | **Java** | Spring Boot | 3,763.20 | 26.57 |
+| 10 | **Python** | FastAPI + Uvicorn | 2,483.88 | 40.26 |
+| 11 | **Kotlin** | Ktor | 2,389.58 | 41.85 |
+| 12 | **Ruby** | Sinatra + Puma | 1,472.19 | 67.93 |
 
 *\*Ruby latency measured during manual run.*
 

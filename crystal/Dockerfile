@@ -1,4 +1,4 @@
-FROM crystallang/crystal:1.20-alpine as builder
+FROM crystallang/crystal:1.21-alpine as builder
 WORKDIR /app
 COPY server.cr ./
 RUN crystal build --release --static server.cr

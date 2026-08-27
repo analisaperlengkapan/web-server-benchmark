@@ -1,7 +1,7 @@
 module main
 
 import veb
-import json
+import json2
 
 pub struct Context {
 	veb.Context
@@ -13,7 +13,7 @@ pub struct App {
 @['/hello']
 pub fn (_ &App) hello(mut ctx Context) veb.Result {
 	ctx.content_type = 'application/json'
-	response := json.encode({'message': 'Hello, world!'})
+	        response := json2.encode({'message': 'Hello, world!'}, json2.EncoderOptions{})
 	return ctx.text(response)
 }
 

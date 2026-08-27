@@ -171,56 +171,18 @@ jobs:
           PYEOF
         continue-on-error: true
 
-      - name: Create Pull Request with benchmark results
-        id: create_pr
-        uses: peter-evans/create-pull-request@v8
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: update benchmark results - ${{ steps.timestamp.outputs.datetime }}"
-          branch: benchmark-results-${{ steps.timestamp.outputs.date }}
-          delete-branch: true
-          base: main
-          title: "📊 Weekly Benchmark Results - ${{ steps.timestamp.outputs.date }}"
-          body: |
-            ## Automated Weekly Benchmark Results
-
-            This PR contains the benchmark results from the automated weekly run on ${{ steps.timestamp.outputs.datetime }}.
-
-            ### Summary
-
-            - **Date**: ${{ steps.timestamp.outputs.datetime }}
-            - **Workflow**: Weekly Benchmark Automation
-            - **Trigger**: Scheduled (Monday 00:00 UTC)
-
-            ### Changes
-
-            - Updated `benchmark_results.txt` with latest performance metrics
-            - Generated `benchmark_summary.md` with formatted results
-            - Updated `README.md` with new benchmark rankings and results
-
-            ### Review Notes
-
-            - Please review the benchmark results for any significant performance changes
-            - Check for any failed builds or tests
-            - Languages that failed to build or run are recorded in `benchmark_results.txt`
-
-            ---
-
-            *This PR was created automatically by the Weekly Benchmark Automation workflow.*
-          labels: |
-            benchmark
-            automated
-            weekly-update
-          add-paths: |
-            benchmark_results.txt
-            benchmark_summary.md
-            README.md
-
-      - name: PR creation result
-        if: steps.create_pr.outputs.pull-request-number
+      - name: Commit benchmark results directly to main
         run: |
-          echo "Pull Request created: #${{ steps.create_pr.outputs.pull-request-number }}"
-          echo "PR URL: ${{ steps.create_pr.outputs.pull-request-url }}"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add benchmark_results.txt benchmark_summary.md README.md
+          if git diff --cached --quiet; then
+            echo "No benchmark changes to commit"
+          else
+            git commit -m "chore: weekly benchmark results - ${{ steps.timestamp.outputs.datetime }}"
+            git push origin main
+            echo "Benchmark results committed directly to main"
+          fi
 
       - name: Upload benchmark artifacts
         if: always()

@@ -1,28 +1,29 @@
-# Benchmark Results - 2026-08-03 03:10:16 UTC
+# Benchmark Results - 2026-08-31 04:34:48 UTC
 
 ## Overview
 
-Automated weekly benchmark run completed on 2026-08-03 03:10:16 UTC.
+Automated weekly benchmark run completed on 2026-08-31 04:34:48 UTC.
 
 ## Results Summary
 
 | Rank | Language | Req/sec | Time/req (ms) | Status |
 |------|----------|---------|---------------|--------|
-| 1 | zig | 18759.19 | 5.331 | ✅ Success |
-| 2 | c | 17964.51 | 5.567 | ✅ Success |
-| 3 | crystal | 17713.72 | 5.645 | ✅ Success |
-| 4 | nim | 17301.82 | 5.780 | ✅ Success |
-| 5 | rust | 16609.59 | 6.021 | ✅ Success |
-| 6 | go | 16547.17 | 6.043 | ✅ Success |
-| 7 | cpp | 13293.22 | 7.523 | ✅ Success |
-| 8 | javascript | 7359.71 | 13.588 | ✅ Success |
-| 9 | typescript | 7343.82 | 13.617 | ✅ Success |
-| 10 | java | 5478.13 | 18.254 | ✅ Success |
-| 11 | kotlin | 3202.92 | 31.222 | ✅ Success |
-| 12 | python | 3034.07 | 32.959 | ✅ Success |
-| 13 | ruby | 1776.80 | 56.281 | ✅ Success |
+| 1 | zig | 19908.94 | 5.023 | ✅ Success |
+| 2 | c | 19682.68 | 5.081 | ✅ Success |
+| 3 | nim | 19548.39 | 5.116 | ✅ Success |
+| 4 | rust | 18403.43 | 5.434 | ✅ Success |
+| 5 | go | 18359.67 | 5.447 | ✅ Success |
+| 6 | cpp | 15261.14 | 6.553 | ✅ Success |
+| 7 | javascript | 9408.65 | 10.629 | ✅ Success |
+| 8 | typescript | 9216.33 | 10.850 | ✅ Success |
+| 9 | crystal | 8491.27 | 11.777 | ✅ Success |
+| 10 | java | 5810.06 | 17.212 | ✅ Success |
+| 11 | kotlin | 3322.94 | 30.094 | ✅ Success |
+| 12 | python | 3211.23 | 31.141 | ✅ Success |
+| 13 | ruby | 1612.92 | 61.999 | ✅ Success |
+| - | v | N/A | N/A | ❌ BUILD_FAILED |
 | - | csharp | N/A | N/A | ❌ SERVER_FAILED |
 | - | ada | N/A | N/A | ❌ BUILD_FAILED |
 
 ---
-*Generated automatically by GitHub Actions on 2026-08-03 03:10:16 UTC*
+*Generated automatically by GitHub Actions on 2026-08-31 04:34:48 UTC*
